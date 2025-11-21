@@ -1,0 +1,45 @@
+# Environment variables
+.env
+
+# Storage (videos, clips, transcripts)
+storage/videos/*
+storage/clips/*
+storage/transcripts/*
+!storage/videos/.gitkeep
+!storage/clips/.gitkeep
+!storage/transcripts/.gitkeep
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Binaries
+binaries/*
+!binaries/.gitkeep
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Node / Frontend
+node_modules/
+.svelte-kit/
+build/
+.DS_Store
+.vscode/
+*.log
+npm-debug.log*
+.turbo/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~

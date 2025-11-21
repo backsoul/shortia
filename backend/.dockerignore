@@ -1,0 +1,8 @@
+storage/
+*.db
+*.db-shm
+*.db-wal
+.env
+*.exe
+*.test
+*.out

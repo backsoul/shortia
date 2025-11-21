@@ -1,0 +1,104 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    environment:
+      # DeepSeek API Configuration
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_API_URL=https://api.deepseek.com
+
+      # OpenAI Whisper API Configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_URL=${OPENAI_API_URL:-https://api.openai.com/v1}
+
+      # Or use Ollama for local AI
+      - USE_OLLAMA=${USE_OLLAMA:-false}
+      - OLLAMA_URL=${OLLAMA_URL:-http://ollama:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-deepseek-r1:latest}
+
+      # Redis Configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=0
+      - CACHE_TTL=86400
+
+      # Server Configuration
+      - PORT=8080
+      - HOST=0.0.0.0
+
+      # Database (inside container)
+      - DB_PATH=/app/storage/database.db
+
+      # Storage Paths (inside container)
+      - STORAGE_PATH=/app/storage
+      - VIDEOS_PATH=/app/storage/videos
+      - CLIPS_PATH=/app/storage/clips
+      - TRANSCRIPTS_PATH=/app/storage/transcripts
+
+      # Binaries (installed in container)
+      - FFMPEG_PATH=ffmpeg
+      - YTDLP_PATH=yt-dlp
+      - WHISPER_PATH=/app/binaries/whisper
+
+      # Processing Settings
+      - MAX_VIDEO_DURATION=3600
+      - MAX_CONCURRENT_JOBS=2
+      - CLIP_MAX_DURATION=60
+
+      # Whisper Settings
+      - WHISPER_MODEL=base
+      - WHISPER_LANGUAGE=auto
+
+    volumes:
+      - ./storage:/app/storage
+      - ./binaries:/app/binaries
+
+    depends_on:
+      - redis
+
+    restart: unless-stopped
+
+    networks:
+      - shortgen-network
+
+  # Redis for caching DeepSeek responses and other data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - shortgen-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Optional: Ollama for local AI (uncomment if you want to use local AI)
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama-data:/root/.ollama
+  #   networks:
+  #     - shortgen-network
+  #   restart: unless-stopped
+
+networks:
+  shortgen-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  ollama-data:
